@@ -3,6 +3,32 @@ class Coordinate{
     this.lat = lat;
     this.lon = lon;
   }
+
+  get_list_lat_lon(){
+    return ([this.lat, this.lon]);
+  }
+}
+
+class Way{
+  constructor(start, stop){
+    this.start = start;
+    this.stop = stop;
+  }
+}
+
+class Graph{
+  constructor(){
+    this.nodes = [];
+    this.edges = [];
+  }
+
+  add_node(node){
+    this.nodes.push(node);
+  }
+
+  add_edge(edge){
+    this.edges.push(edge);
+  }
 }
 
 addMapCopyright = function(map){
@@ -23,4 +49,34 @@ getListCoordinates = function(coordinates){
     coordinatesList.push(new Coordinate(ss[0], ss[1]));
   }
   return coordinatesList;
+}
+
+
+buildGraph = function(graphJson, map){
+  var obj = JSON.parse(graphJson);
+  var graph = new Graph();
+  for (var node of obj['nodes']){
+    graph.add_node(new Coordinate(node['lat'], node['lon']));
+  }
+  for (var edge of obj['edges']){
+    let start = edge['start'];
+    let stop = edge['stop'];
+    let startCoord = new Coordinate(start['lat'], start['lon']);
+    let stopCoord = new Coordinate(stop['lat'], stop['lon']);
+    graph.add_edge(new Way(startCoord, stopCoord));
+  }
+  return graph;
+}
+
+displayCoordinatesOnMap = function(coordinates, map){
+  for(var point of coordinates){
+    L.circle([point.lat, point.lon],  {radius: 10}).addTo(map);
+  }
+}
+
+displayEdgesOnMap = function(edges, map){
+  for(var way of edges){
+    let toPlot = [way.start.get_list_lat_lon(), way.stop.get_list_lat_lon()];
+    L.polyline(toPlot, {color: 'red'}).addTo(map);
+  }
 }

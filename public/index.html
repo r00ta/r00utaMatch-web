@@ -5,6 +5,7 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <link rel="stylesheet" type="text/css" href="%PUBLIC_URL%/css/style.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta
@@ -31,6 +32,13 @@
        </div>
        <input class="btn btn-primary" type="submit" value="Submit" id="coordinatesInputButton">
      </form>
+     <form>
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="userFile">
+        <label class="custom-file-label" for="customFile">Choose json file containing a graph</label>
+        <input class="btn btn-primary" type="submit" value="Submit" id="submitFile">
+      </div>
+    </form>
      </div>
      <div class="column right">
        <div id="mapid" style="width: 100%; height: 50vw"></div>
@@ -45,18 +53,40 @@
 
     var layerGroup = L.layerGroup().addTo(mymap);
 
-    var myEl = document.getElementById('coordinatesInputButton');
+    var coordinateEl = document.getElementById('coordinatesInputButton');
 
-    myEl.addEventListener('click', function(event) {
+    coordinateEl.addEventListener('click', function(event) {
         event.preventDefault();
         layerGroup.clearLayers();
         var coordinatesText = document.getElementById("coordinatesTextArea").value;
         var coordinatesList = getListCoordinates(coordinatesText);
-        for(var point of coordinatesList){
-          L.marker([point.lat, point.lon]).addTo(layerGroup);
-        }
+        displayCoordinatesOnMap(coordinatesList, layerGroup);
         mymap.setView([coordinatesList[0].lat, coordinatesList[0].lon], 13);
     }, false);
+
+    var fileUploadEl = document.getElementById('submitFile');
+
+    fileUploadEl.addEventListener('click', function(event) {
+        event.preventDefault();
+        layerGroup.clearLayers();
+        var myFile = $('#userFile').prop('files')[0];
+
+        var reader = new FileReader();
+        var fileContent;
+        reader.onload = function(event) {
+            let graph = buildGraph(event.target.result);
+            displayCoordinatesOnMap(graph.nodes, layerGroup);
+            displayEdgesOnMap(graph.edges, layerGroup);
+            mymap.setView([graph.nodes[0].lat, graph.nodes[0].lon], 13);
+        };
+        reader.readAsText(myFile);
+    }, false);
+
+    // Add the following code if you want the name of the file appear on select
+    $(".custom-file-input").on("change", function() {
+      var fileName = $(this).val().split("\\").pop();
+      $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+    });
 
    </script>
 
