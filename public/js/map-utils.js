@@ -1,7 +1,8 @@
 class Coordinate{
-  constructor(lat, lon){
+  constructor(lat, lon, is_intersection){
     this.lat = lat;
     this.lon = lon;
+    this.is_intersection = is_intersection;
   }
 
   get_list_lat_lon(){
@@ -56,7 +57,7 @@ buildGraph = function(graphJson, map){
   var obj = JSON.parse(graphJson);
   var graph = new Graph();
   for (var node of obj['nodes']){
-    graph.add_node(new Coordinate(node['lat'], node['lon']));
+    graph.add_node(new Coordinate(node['lat'], node['lon'], node['is_intersection']));
   }
   for (var edge of obj['edges']){
     let start = edge['start'];
@@ -70,7 +71,8 @@ buildGraph = function(graphJson, map){
 
 displayCoordinatesOnMap = function(coordinates, map){
   for(var point of coordinates){
-    L.circle([point.lat, point.lon],  {radius: 10}).addTo(map);
+    let color = (point.is_intersection == true) ? "blue" : "orange";
+    L.circle([point.lat, point.lon],  {radius: 10, color: color}).addTo(map);
   }
 }
 
